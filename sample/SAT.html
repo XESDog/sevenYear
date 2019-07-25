@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SAT</title>
+    <script src="../lib/pixi.js"></script>
+    <script src="../dist/main.js"></script>
+    <script src="./const.js"></script>
+    <script src="./utils.js"></script>
+</head>
+<body>
+<script>
+    let {SAT} = sevenYear;
+    let app = createApp();
+    let stage = app.stage;
+    let data = {
+        polygonA: {type: "polygon", points: [10, 10, 110, 50, 110, 110, 10, 110]},
+        polygonB: {type: "polygon", points: [200, 200, 350, 200, 300, 300, 200, 300]}
+    };
+    let view = null;//{p1:{data}}
+
+    view = draw(stage, data);
+    update();
+    createStageEvent(stage, update);
+    document.body.append(app.view);
+
+    function update() {
+        let {polygonA, polygonB} = view;
+
+        let intersect = SAT(data.polygonA, data.polygonB);
+
+        if (intersect) {
+            drawPolygon(data.polygonA.points, polygonA, 0xff0000);
+            drawPolygon(data.polygonB.points, polygonB, 0xff0000);
+        } else {
+            drawPolygon(data.polygonA.points, polygonA);
+            drawPolygon(data.polygonB.points, polygonB);
+        }
+
+
+    }
+
+</script>
+</body>
+</html>

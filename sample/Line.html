@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Line</title>
+    <script src="../lib/pixi.js"></script>
+    <script src="../dist/main.js"></script>
+    <script src="./const.js"></script>
+    <script src="./utils.js"></script>
+</head>
+<body>
+
+<script>
+    let app = createApp();
+    let stage = app.stage;
+    let data = {
+        p1: {type: 'point', x: 100, y: 100},
+        p2: {type: 'point', x: 400, y: 200},
+        p3: {type: 'point', x: 100, y: 200}
+    };
+    let view = null;//{p1:{data}}
+
+    view = draw(stage, data);
+    update();
+    createStageEvent(stage, update);
+    document.body.append(app.view);
+
+    function update() {
+        let {line1, line2, p1, p2, p3, p4} = view;
+        if (!line1) {
+            line1 = new Graphics();
+            stage.addChild(line1);
+            view.line1 = line1;
+        }
+        if (!line2) {
+            line2 = new Graphics();
+            stage.addChild(line2);
+            view.line2 = line2;
+        }
+
+        drawLine(data.p1, data.p2, line1);
+        drawLine(data.p1, data.p3, line2);
+
+        drawCircle(data.p1, p1);
+        drawCircle(data.p2, p2);
+        drawCircle(data.p3, p3);
+
+        //计算p1-p3,在p1,p2上的投影
+        let v1 = new Vector2(data.p2.x - data.p1.x, data.p2.y - data.p1.y);
+        let v2 = new Vector2(data.p3.x - data.p1.x, data.p3.y - data.p1.y);
+        let len1 = v1.length();
+
+        let v = Vector2.create(data.p1.x, data.p1.y);
+        v.lerp(Vector2.create(data.p2.x, data.p2.y), v1.dot(v2) / len1 / len1);
+        if (!p4) {
+            p4 = drawCircle(v, null, false);
+            stage.addChild(p4);
+            view.p4 = p4;
+        }
+        drawCircle(v, p4);
+
+    }
+
+</script>
+
+</body>
+</html>
