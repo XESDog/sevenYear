@@ -14,10 +14,11 @@
     let app = createApp();
     let stage = app.stage;
     let data = {
-        polygonA: {type: "polygon", points: [10, 10, 110, 50, 110, 110, 10, 110]},
-        polygonB: {type: "polygon", points: [200, 200, 350, 200, 300, 300, 200, 300]}
+        polygonA: {type: "polygon", points: [10, 10, 110, 50, 110, 110, 10, 150]},
+        polygonB: {type: "polygon", points: [0, 0, 50, 50, 100, 0, 100, 100, 0, 100]}
     };
     let view = null;//{p1:{data}}
+
 
     view = draw(stage, data);
     update();

@@ -29,6 +29,10 @@ export class Vector2 {
         return this.x * v.x + this.y * v.y;
     }
 
+    cross(v) {
+        return this.x * v.y - this.y * v.x;
+    }
+
     lerp(v, alpha) {
         this.x += (v.x - this.x) * alpha;
         this.y += (v.y - this.y) * alpha;

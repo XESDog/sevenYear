@@ -3,7 +3,7 @@ let {Point, Vector2, Matrix} = sevenYear;
 
 function createApp() {
     let app = new Application({width: 800, height: 600, autoDensity: true, resolution: 2});
-    let bg = drawRect(0, 0, 800, 600, 0x333333);
+    let bg = drawRect(0, 0, 800, 600, null, 0x333333);
     app.stage.addChild(bg);
     app.stage.interactive = true;
     return app;
@@ -79,18 +79,18 @@ function draw(stage, data) {
     return view;
 }
 
-function drawRect(x, y, w, h, color = 0xffffff, interactive = true) {
-    let rect = new Graphics();
-    rect.beginFill(color);
-    rect.drawRect(x, y, w, h);
-    rect.endFill();
+function drawRect(x, y, w, h, context = null, fillColor = 0xffffff, interactive = true) {
+    if (!context) context = new Graphics();
+    context.beginFill(fillColor);
+    context.drawRect(x, y, w, h);
+    context.endFill();
 
-    rect.interactive = interactive;
+    context.interactive = interactive;
 
-    return rect;
+    return context;
 }
 
-function drawPolygon(points, context = null,fillColor=POLYGON_FILL_COLOR, interactive = true) {
+function drawPolygon(points, context = null, fillColor = POLYGON_FILL_COLOR, interactive = true) {
     if (!context) context = new Graphics();
     context.clear();
     context.lineStyle(1, POLYGON_STROKE_COLOR, 1);
@@ -106,17 +106,21 @@ function drawPolygon(points, context = null,fillColor=POLYGON_FILL_COLOR, intera
     context.cursor = 'pointer';
     context.interactive = interactive;
 
-    return context
+    return context;
 }
 
 function drawCircle(p, context = null, interactive = true) {
     if (!context) context = new Graphics();
     context.clear();
     context.lineStyle(1, POINT_STROKE_COLOR, 1);
-    context.beginFill(POINT_FILL_COLOR);
+    context.beginFill(POINT_FILL_COLOR, 0.2);
     context.drawCircle(p.x, p.y, 8);
     context.endFill();
-    context.cursor = 'pointer';
+
+    context.moveTo(p.x, p.y);
+    context.lineTo(p.x+8, p.y);
+
+    context.cursor = interactive ? 'pointer' : "";
     context.interactive = interactive;
 
     return context;
@@ -138,8 +142,8 @@ function cloneObj(obj) {
     if (typeof obj !== 'object') {
         return;
     } else if (window.JSON) {
-        str = JSON.stringify(obj), //系列化对象
-            newObj = JSON.parse(str); //还原
+        str = JSON.stringify(obj);
+        newObj = JSON.parse(str);
     } else {
         for (let i in obj) {
             newObj[i] = typeof obj[i] === 'object' ?

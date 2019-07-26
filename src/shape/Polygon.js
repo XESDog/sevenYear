@@ -1,4 +1,4 @@
-import {Point} from "..";
+import {Point, Vector2} from "..";
 
 export class Polygon {
     constructor(...points) {
@@ -16,6 +16,8 @@ export class Polygon {
             points = p;
         }
         this.points = points;
+
+        if (this.points.length < 6) throw new Error('多边形最少需要3个顶点');
     }
 
 
@@ -37,6 +39,46 @@ export class Polygon {
             }
         }
         return inside;
+    }
+
+    /**
+     * 是否凸多边形
+     * 解法：任意一条边无线延伸，其他的点均在这条边的一侧，称为凸多边形
+     * @return {boolean}
+     */
+    isConvex() {
+        let sign = null;//符号
+        let sign2 = null;
+        let length = this.points.length / 2;
+        if (length < 3) return false;
+
+        let ps = this.points;//最后一个点和最前面一个点也能组成一条边
+        let v1 = new Vector2();
+        let v2 = new Vector2();
+
+        let getCrossSign = (v1, v2) => {
+            let r = v1.cross(v2);
+            if (r > 0) return 1;
+            if (r === 0) return 0;
+            if (r < 0) return -1;
+        };
+
+        for (let i = 0, j = length - 1; i < length; j = i++) {
+            v1.set(ps[i * 2] - ps[j * 2], ps[i * 2 + 1] - ps[j * 2 + 1]);
+
+            for (let k = 0; k < length; k++) {
+                if (k === i || k === j) continue;
+                v2.set(ps[i * 2] - ps[k * 2], ps[i * 2 + 1] - ps[k * 2 + 1]);
+
+                sign2 = getCrossSign(v1, v2);
+                if (sign === null) {
+                    if (sign2 !== 0) sign = sign2;
+                } else {
+                    if (sign2 !== 0 && sign !== sign2) return false;
+                }
+            }
+        }
+        return true;
     }
 
     clone() {

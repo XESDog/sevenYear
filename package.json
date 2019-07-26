@@ -7,11 +7,17 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack",
+    "test": "jest"
   },
   "author": "Mr.zheng",
   "license": "ISC",
   "devDependencies": {
-    "webpack": "^4.36.1"
+    "@babel/core": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "babel-jest": "^24.8.0",
+    "jest": "^24.8.0",
+    "webpack": "^4.36.1",
+    "webpack-cli": "^3.3.6"
   }
 }
