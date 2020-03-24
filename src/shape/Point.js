@@ -1,4 +1,4 @@
-import {Vector2} from "./Vector2";
+import {Vector2} from "..";
 
 export class Point {
     constructor(x = 0, y = 0) {
@@ -12,5 +12,9 @@ export class Point {
 
     toVector2() {
         return new Vector2(this.x, this.y);
+    }
+
+    equal(p) {
+        return this.x === p.x && this.y === p.y;
     }
 }

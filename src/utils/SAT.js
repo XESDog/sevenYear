@@ -1,5 +1,12 @@
 import {Vector2} from "..";
 
+/**
+ * 分离轴定理
+ * @param polygonA
+ * @param polygonB
+ * @return {boolean}
+ * @constructor
+ */
 export const SAT = (polygonA, polygonB) => {
     return !(!itrPolygonEdge(polygonA, polygonB) || !itrPolygonEdge(polygonB, polygonA));
 }

@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "webpack",
+    "jsdoc": "jsdoc",
     "test": "jest"
   },
   "author": "Mr.zheng",
@@ -17,6 +18,7 @@
     "@babel/preset-env": "^7.5.5",
     "babel-jest": "^24.8.0",
     "jest": "^24.8.0",
+    "jsdoc": "^3.6.3",
     "webpack": "^4.36.1",
     "webpack-cli": "^3.3.6"
   }

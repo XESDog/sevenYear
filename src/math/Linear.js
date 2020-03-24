@@ -31,4 +31,9 @@ export class Linear {
             return k * x + this.b;
         }
     }
+    contains(p){
+        const v1=Vector2.create(this.p2.x-this.p1.x,this.p2.y-this.p1.y);
+        const v2 = Vector2.create(this.p2.x - p.x, this.p2.y - p.y);
+        return v1.cross(v2)<1e-10;//小于一定误差范围
+    }
 }
