@@ -6,5 +6,5 @@ export interface Comparable {
      * -1:表示other>this
      * @param other
      */
-    compare(other: Comparable): number;
+    compare(other): number;
 }

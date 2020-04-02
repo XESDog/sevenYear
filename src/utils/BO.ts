@@ -1,15 +1,13 @@
-/**
- * 平面扫描算法求线段交点
- * @param points
- * @constructor
- */
 import {BBST} from "../ds/BBST";
 import {PriorityQueue} from "../ds/PriorityQueue";
-import {Linear} from "../math/Linear";
-import {Point, Vector2} from "..";
+import {Linear, LinearType} from "../math/Linear";
+import {Point} from "..";
 import {Comparable} from "../ds/Comparable";
 import {segmentIntersection} from "./segmentIntersection";
 
+/**
+ *  point type enum
+ */
 enum PointType {
     START, INTERSECTION, END
 }
@@ -41,41 +39,136 @@ interface SLSVal extends Comparable {
 }
 
 /**
+ * 求sls中两条线段的交点
+ * @param la
+ * @param lb
+ */
+function getIntersection(la: Linear, lb: Linear) {
+    return segmentIntersection(la.p1.toVector2(), la.p2.toVector2(),
+        lb.p1.toVector2(), lb.p2.toVector2());
+
+}
+
+/**
+ * create sls val
+ * @param line
+ * @param y
+ */
+function createSLSVal(line, y): SLSVal {
+    return {
+        line: line,
+        withY: y,
+        compare(other: any): number {
+            if (this.line === other.line) return 0;
+            return this.withY - other.withY;
+        }
+    };
+}
+
+/**
  *
- * @param points
+ * @param l
+ * @param p
+ * @param pointType 如果线段垂直于x轴，线段的两个点必须有一个是起点，有一个是终点，在这个方法中无法判断，因此通过外传的方式强制设定pointType
+ */
+function createEventVal(l: Linear | Array<Linear>, p, pointType?: PointType): EventVal {
+
+    if (pointType === undefined && !Array.isArray(l)) {
+        let line: Linear = l as Linear;
+        if (p == line.p1) {
+            pointType = p.x < line.p2.x ? PointType.START : PointType.END
+        } else if (p == line.p2) {
+            pointType = p.x < line.p1.x ? PointType.START : PointType.END
+        } else {
+            throw new Error('p点必须是线段l的端点之一');
+        }
+    }
+    return {
+        p: p,
+        line: l,
+        priority: p.x,
+        pointType: pointType
+    };
+}
+
+/**
+ * 平面扫描算法求线段交点
+ * @param points x1,y1,x2,y2...
  * @constructor
  */
 export function BO(points) {
-    let sls: BBST<SLSVal> = new BBST();//swap line status
+    /**
+     *swap line status
+     */
+    let sls: BBST<SLSVal> = new BBST();
+    /**
+     * 事件队列
+     */
     let eventQueue: PriorityQueue<EventVal> = new PriorityQueue();
-    let len = points.length;
-    let eventNode: EventVal = null;
+    /**
+     *当前检测的事件节点
+     */
+    let currentEventVal: EventVal = null;
+    /**
+     *交点集合
+     */
+
     let result: Array<Point> = [];
-    let x/*扫描线*/, currentSlsNode/*当前检测节点*/, prevN, nextN;
+    /**
+     *当前slsNode的上一个节点
+     */
+    let prevN = null;
+    /**
+     *当前slsNode的下一个节点
+     */
+    let nextN = null;
     /**
      * 线段检测表
+     * key:Linear
+     * value:[]<Linear>
      */
     let intersectTestMap = new Map();
     /**
      * line 和 slsNode对应表
+     * key:Linear
+     * value:slsNode
      */
     let lineToSlsNodeMap = new Map();
+    /**
+     *当前检测节点
+     */
+    let currentSlsNode = null;
+
+
+    let len = points.length;
     /**
      * 根据扫描线更新sls中选段withY信息
      * @param x
      */
-    let updateWidthY = (x) => {
+    let updateWithY = (x) => {
         if (sls.mRoot !== null) {
             sls.mRoot.inorder((node, userData) => {
                 let line = node.val.line;
-                let intersection = segmentIntersection(line.p1.toVector2(), line.p2.toVector2(),
-                    new Vector2(userData, Number.MIN_SAFE_INTEGER),
-                    new Vector2(userData, Number.MAX_SAFE_INTEGER));
-                if (intersection) node.val.withY = intersection.y;
+                node.val.withY = line.getY(userData);
                 return true;
             }, x)
         }
     };
+    /**
+     * 获取sls中线段和垂线的交点
+     * @param x
+     */
+    let getIntersectionWithX = x => {
+        let result = [];
+        if (sls.mRoot !== null) {
+            sls.mRoot.inorder((node, userData) => {
+                let line = node.val.line;
+                result.push(new Point(userData, line.getY(userData)));
+                return true;
+            }, x)
+        }
+        return result;
+    }
     /**
      * 建立一个查询列表，方便查询两条线段是否已经检测过
      * @param key
@@ -101,14 +194,15 @@ export function BO(points) {
         let lb = b.val.line;
         let interSection = null;
         if (!hasIntersectTest(la, lb)) {
-            interSection = getIntersection(la, lb);
-            if (interSection) {
-                eventQueue.enqueue(createEventVal([la, lb], interSection));
+            if (la.equal(lb, LinearType.LINE)) return;//共线，不求交点
+            interSection = la.commonEndPoint(lb);
+
+            if (interSection || (interSection = getIntersection(la, lb))) {
                 assignIntersectTestMap(la, lb);
                 assignIntersectTestMap(lb, la);
+                eventQueue.enqueue(createEventVal([la, lb], interSection, PointType.INTERSECTION));
             }
         }
-        return interSection;
     };
     /**
      * 是否已经求过交点
@@ -130,20 +224,31 @@ export function BO(points) {
     //初始化eventQueue
     for (let i = 0; i < len; i += 4) {
         let l = new Linear(new Point(points[i], points[i + 1]), new Point(points[i + 2], points[i + 3]));
-        eventQueue.enqueue(createEventVal(l, l.p1), createEventVal(l, l.p2));
+
+        if (l.isVertical()) {
+            //垂线添加一个起点，处理的时候，判断是垂线，将不会添加到sls
+            eventQueue.enqueue(createEventVal(l, l.p1, PointType.START));
+        } else {
+            eventQueue.enqueue(createEventVal(l, l.p1), createEventVal(l, l.p2));
+        }
     }
 
     while (eventQueue.size > 0) {
 
-        eventNode = eventQueue.dequeue();
-        x = eventNode.p.x;//扫描线
-        updateWidthY(x);//重新设置widthY
+        currentEventVal = eventQueue.dequeue();
+        //当前线条是垂线
+        if (!Array.isArray(currentEventVal.line) && currentEventVal.line.isVertical()) {
+            result = result.concat(getIntersectionWithX(currentEventVal.p.x));
+            continue;
+        } else {
+            updateWithY(currentEventVal.p.x);
+        }
 
-        switch (eventNode.pointType) {
+        switch (currentEventVal.pointType) {
             case PointType.START:
-                let val: SLSVal = createSLSVal(eventNode.line, eventNode.p.y);
+                let val: SLSVal = createSLSVal(currentEventVal.line, currentEventVal.p.y);
                 currentSlsNode = sls.insert(val);
-                lineToSlsNodeMap.set(eventNode.line, currentSlsNode);
+                lineToSlsNodeMap.set(currentEventVal.line, currentSlsNode);
 
                 //插入新线段，求相邻线段的交点
                 prevN = currentSlsNode.inorderPrev();
@@ -152,7 +257,7 @@ export function BO(points) {
                 compareSegment(currentSlsNode, nextN);
                 break;
             case PointType.END:
-                currentSlsNode = lineToSlsNodeMap.get(eventNode.line);
+                currentSlsNode = lineToSlsNodeMap.get(currentEventVal.line);
 
                 //删除线段，求相邻线段交点
                 prevN = currentSlsNode.inorderPrev();
@@ -162,9 +267,9 @@ export function BO(points) {
                 break;
             case PointType.INTERSECTION:
 
-                result.push(eventNode.p);
+                result.push(currentEventVal.p);
 
-                let ls = eventNode.line;//两条线段
+                let ls = currentEventVal.line;//两条线段
                 let n1 = lineToSlsNodeMap.get(ls[0]);
                 let n2 = lineToSlsNodeMap.get(ls[1]);
                 let prevN1, prevN2, nextN1, nextN2;
@@ -193,51 +298,11 @@ export function BO(points) {
         }
     }
 
+    result.map(v => {
+        v.x = Number.parseInt(v.x * 20 + '') / 20;
+        v.y = Number.parseInt(v.y * 20 + '') / 20;
+    });
     return result;
 }
 
-/**
- * 求sls中两条线段的交点
- * @param la
- * @param lb
- */
-function getIntersection(la: Linear, lb: Linear) {
-    return segmentIntersection(la.p1.toVector2(), la.p2.toVector2(),
-        lb.p1.toVector2(), lb.p2.toVector2());
-
-}
-
-function createSLSVal(line, y): SLSVal {
-    return {
-        line: line,
-        withY: y,
-        compare(other: any): number {
-            if (this.line === other.line) return 0;
-            return this.withY - other.withY;
-        }
-    };
-}
-
-function createEventVal(l: Linear | Array<Linear>, p): EventVal {
-
-    let pointType = null;
-    if (!Array.isArray(l)) {
-        let line: Linear = l as Linear;
-        if (p == line.p1) {
-            pointType = p.x < line.p2.x ? PointType.START : PointType.END
-        } else if (p == line.p2) {
-            pointType = p.x < line.p1.x ? PointType.START : PointType.END
-        } else {
-            throw new Error('p点必须是线段l的端点之一');
-        }
-    } else {
-        pointType = PointType.INTERSECTION;
-    }
-    return {
-        p: p,
-        line: l,
-        priority: p.x,
-        pointType
-    };
-}
 

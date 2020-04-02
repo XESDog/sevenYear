@@ -17,7 +17,7 @@ export function GrahamScan(points) {
     return itr(s, t);
 }
 
-export function itr(s,t){
+export function itr(s, t) {
     while (t.length > 0) {
         if (toLeft(s[s.length - 2], s[s.length - 1], t[0]) > 0) {
             s.push(t.shift());
@@ -43,11 +43,12 @@ export function presorting(sp, points) {
     for (let i = 0; i < len; i = i + 2) {
         let p = new Point(points[i], points[i + 1]);
         if (sp.equal(p)) continue;//不处理同一个点
-        p['angle'] = Math.atan2(p.y - sp.y, p.x - sp.x)
-        result.push(p)
+        let obj = {point: p, angle: Math.atan2(p.y - sp.y, p.x - sp.x)}
+        result.push(obj);
     }
     result.sort((a, b) => {
         return a.angle - b.angle;
     });
+    result = result.map(v => v.point)
     return result;
 }

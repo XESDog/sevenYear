@@ -26,6 +26,11 @@ export class Circle {
         return Math.PI * this.r2;
     }
 
+    /**
+     * 点是否在圆上
+     * 注意：圆周上的点在圆上
+     * @param p
+     */
     contains(p: Point | Array<number>): boolean {
         let x, y;
         if (Array.isArray(p)) {
@@ -38,6 +43,10 @@ export class Circle {
 
         const v = Vector2.create(x, y).sub(Vector2.create(this.x, this.y));
         return v.lengthSq() <= this.r2;
+    }
+
+    equal(circle) {
+        return this.x === circle.x && this.y === circle.y && this.radius === circle.radius;
     }
 
     clone() {

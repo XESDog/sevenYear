@@ -57,17 +57,18 @@ export class BinaryTreeNode<T> {
         if (!this) return null;
         if (this.left) {
             let l = this.left;
-            while (l) {
-                l = this.right;
+            while (l.right) {
+                l = l.right;
             }
             return l;
         } else {
             let q: BinaryTreeNode<T> = this;
             let p: BinaryTreeNode<T> = q.parent;
-            while (p && p.isLeft()) {
+            while (p && p.right !== q) {
                 q = p;
                 p = p.parent;
             }
+            if (p == this) return null;
             return p;
         }
     }
@@ -76,17 +77,18 @@ export class BinaryTreeNode<T> {
         if (!this) return null;
         if (this.right) {
             let r = this.right;
-            while (r) {
+            while (r.left) {
                 r = r.left;
             }
             return r;
         } else {
             let q: BinaryTreeNode<T> = this;
             let p: BinaryTreeNode<T> = q.parent;
-            while (p && p.isRight()) {
+            while (p && p.left !== q) {
                 q = p;
                 p = p.parent;
             }
+            if (p == this) return null;
             return p;
         }
     }

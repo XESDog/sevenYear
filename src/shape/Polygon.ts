@@ -3,11 +3,12 @@ import {Point, toLeft} from "..";
 export class Polygon {
     rawPoints;
     points;
+
     /**
      *
      * @param points
      */
-    constructor(points:Array<number>) {
+    constructor(points: Array<number>) {
         if (points.length < 6) throw new Error('多边形最少需要3个顶点');
         if (points.length % 2 !== 0) throw new Error('多边形参数需要偶数个Number');
         this.rawPoints = points;

@@ -28,8 +28,16 @@ export class Rectangle {
         return this.width * this.height;
     }
 
+    equal(rect) {
+        return this.x === rect.x && this.y === rect.y && this.width === rect.width && this.height === rect.height;
+    }
+
     clone() {
         return new Rectangle(this.x, this.y, this.width, this.height);
+    }
+
+    toString() {
+        return `[Rectangle x=${this.x},y=${this.y},width=${this.width},height=${this.height},area=${this.area()}]`
     }
 
 }
