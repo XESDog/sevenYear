@@ -2,28 +2,27 @@ import {Point} from "..";
 
 /**
  * lowest-then-leftmost
- * @param points
+ * 从参数points中找出x,y最小的点作为第一个极点
+ *
+ * @param {Array<number>} points [x1,y1,x2,y2....xn,yn]
  * @return {Point}
  */
-export function ltl(points) {
-    if (points.length < 6) throw new Error('不能少于三个顶点')
-    let result = null;
+export function ltl(points: Array<number>): Point {
+    if (points.length < 6) throw new Error('no less than three vertices');
+    let result: Point = null;
     let len = points.length;
-    let assignResult = (arr) => {
-        result.x = arr[0];
-        result.y = arr[1];
-    };
+
+    //先查找y值最小的点，如果点的y值相同，再找x值最小的点
     for (let i = 0; i < len; i = i + 2) {
-        //初始化第一个点
         if (!result) {
-            result = new Point(points[0], points[1]);
+            result=new Point(points[0], points[1]);
             continue;
         }
-        if (points[i] < result[1]) {
-            assignResult(points.slice(i - 1, i + 1));
-        } else if (points[i] === result[1]) {
-            if (points[i - 1] < result[0]) {
-                assignResult(points.slice(i - 1, i + 1));
+        if (points[i + 1] < result[1]) {
+            result.set(points.slice(i, i + 2));
+        } else if (points[i + 1] === result[1]) {
+            if (points[i] < result[0]) {
+                result.set(points.slice(i, i + 2));
             }
         }
     }

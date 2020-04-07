@@ -40,4 +40,8 @@ export class Rectangle {
         return `[Rectangle x=${this.x},y=${this.y},width=${this.width},height=${this.height},area=${this.area()}]`
     }
 
+    static get EMPTY(): Rectangle {
+        return new Rectangle(0, 0, 0, 0);
+    }
+
 }

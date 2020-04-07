@@ -44,6 +44,9 @@ interface SLSVal extends Comparable {
  * @param lb
  */
 function getIntersection(la: Linear, lb: Linear) {
+    if (la.equal(lb, LinearType.LINE)) return null;//共线，不求交点
+    let p = la.commonEndPoint(lb);
+    if (p) return p;
     return segmentIntersection(la.p1.toVector2(), la.p2.toVector2(),
         lb.p1.toVector2(), lb.p2.toVector2());
 
@@ -194,10 +197,8 @@ export function BO(points) {
         let lb = b.val.line;
         let interSection = null;
         if (!hasIntersectTest(la, lb)) {
-            if (la.equal(lb, LinearType.LINE)) return;//共线，不求交点
-            interSection = la.commonEndPoint(lb);
-
-            if (interSection || (interSection = getIntersection(la, lb))) {
+            interSection = getIntersection(la, lb);
+            if (interSection) {
                 assignIntersectTestMap(la, lb);
                 assignIntersectTestMap(lb, la);
                 eventQueue.enqueue(createEventVal([la, lb], interSection, PointType.INTERSECTION));

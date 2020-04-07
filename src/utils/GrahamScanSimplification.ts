@@ -16,7 +16,12 @@ function presorting(points) {
     return result;
 }
 
-
+/**
+ * GrahamScan简化算法，将第一个极点定义成y轴无限远的位置，那么剩下点跟该极点的角度排序可以简化成x轴坐标排序
+ * @param points
+ * @return {...any[]}
+ * @constructor
+ */
 export function GrahamScanSimplification(points) {
     let sp = new Point(0, Number.MIN_VALUE);
     let s = [sp];

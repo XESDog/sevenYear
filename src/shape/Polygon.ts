@@ -1,8 +1,12 @@
 import {Point, toLeft} from "..";
+import {Bounds} from "./Bounds";
 
 export class Polygon {
     rawPoints;
     points;
+    bounds: Bounds = new Bounds();
+    upperBoundPoint = new Point(0, Number.MIN_SAFE_INTEGER);
+    lowerBoundPoint = new Point(0, Number.MAX_SAFE_INTEGER);
 
     /**
      *
@@ -16,9 +20,18 @@ export class Polygon {
 
         let len = this.rawPoints.length;
         for (let i = 0; i < len; i += 2) {
-            this.points.push(new Point(this.rawPoints[i], this.rawPoints[i + 1]));
+            let p = new Point(this.rawPoints[i], this.rawPoints[i + 1]);
+            this.points.push(p);
+            this.bounds.addPoint(p);
+            if (p.y > this.upperBoundPoint.y) {
+                this.upperBoundPoint = p;
+            }
+            if (p.y < this.lowerBoundPoint.y) {
+                this.lowerBoundPoint = p;
+            }
         }
     }
+
 
     contains(p: Point | Array<number>): boolean {
         let x, y;
